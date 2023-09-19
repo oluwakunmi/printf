@@ -1,18 +1,6 @@
-#include <stdio.h>
 #include <stdarg.h>
+#include <unistd.h>
 #include "main.h"
-
-/**
- * printBuffer - buffer if it exists
- * @buffer: input buffer
- * @index: input index
- */
-void printBuffer(char buffer[], int *index)
-{
-	if (*index > 0)
-		write(1, &buffer[0], *index);
-	*index = 0;
-}
 
 /**
  * _printf - Printf function
@@ -21,73 +9,57 @@ void printBuffer(char buffer[], int *index)
  */
 int _printf(const char *format, ...)
 {
-	int i, printChars = 0;
-	int index = 0;
-	va_list type;
-	char buffer[BUFFER_SIZE];
+    if (format == NULL)
+        return (-1);
 
-	if (format == NULL)
-		return (-1);
+    va_list args;
+    va_start(args, format);
 
-	va_start(type, format);
+    int chars_printed = 0;
+    while (*format)
+    {
+        if (*format == '%')
+        {
+            format++; // Move past '%'
+            if (*format == '\0') // Check for format string end
+                break;
 
-	for (i = 0; format[i] != '\0'; i++)
-	{
-		if (format[i] != '%')
-		{
-			buffer[index++] = format[i];
-			if (index == BUFFER_SIZE)
-				printBuffer(buffer, &index);
-			printChars++;
-		}
-		else
-		{
-			printBuffer(buffer, &index);
-			i++;
-			if (format[i] == '\0')
-				break;
+            if (*format == 'c') // Handle 'c' specifier
+            {
+                char c = va_arg(args, int);
+                write(1, &c, 1);
+                chars_printed++;
+            }
+            else if (*format == 's') // Handle 's' specifier
+            {
+                char *str = va_arg(args, char *);
+                if (str == NULL)
+                    str = "(null)";
+                while (*str)
+                {
+                    write(1, str, 1);
+                    str++;
+                    chars_printed++;
+                }
+            }
+            else if (*format == '%') // Handle '%%' specifier
+            {
+                write(1, "%", 1);
+                chars_printed++;
+            }
+            // You can add more specifiers here if needed.
 
-			if (format[i] == 'c')
-			{
-				char c = va_arg(type, int);
-				putchar(c);
-				printChars++;
-			}
-			else if (format[i] == 's')
-			{
-				char *str = va_arg(type, char *);
-				if (str)
-				{
-					while (*str)
-					{
-						putchar(*str);
-						str++;
-						printChars++;
-					}
-				}
-			}
-			else if (format[i] == '%')
-			{
-				putchar('%');
-				printChars++;
-			}
-		}
-	}
+            format++; // Move to the next character in the format string
+        }
+        else
+        {
+            write(1, format, 1);
+            chars_printed++;
+            format++;
+        }
+    }
 
-	printBuffer(buffer, &index);
-
-	va_end(type);
-
-	return (printChars);
+    va_end(args);
+    return chars_printed;
 }
-int main()
-{
-    int num = 42;
-    char *name = "ubaydah";
 
-    int printed_chars = _printf("Hello, %s! The answer is %d%%.\n", name, num);
-
-    printf("Total characters printed: %d\n", printed_chars);
-
-    return 0;
-}
