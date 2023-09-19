@@ -62,4 +62,3 @@ printBuffer(buffer, &index);
 va_end(type); /* Clean up the va_list variable */
 return (printChars);
 }
-
