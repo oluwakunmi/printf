@@ -4,53 +4,39 @@
 
 int _printf(const char *format, ...)
 {
-    if (format == NULL) {
-        return -1; // Error: NULL format string
-    }
+	int char_count = 0;    
+	va_list args;
+    	va_start(args, format);
 
-    int char_count = 0;
-    va_list args;
-    va_start(args, format);
+    	while (*format) {
+        	if (*format == '%') {
+            	format++; /* Move past '%' */
+            	switch (*format) {
+                	case 'c':
+                    	putchar(va_arg(args, int));
+                    	char_count++;
+                    	break;
+                	case 's':
+                    	char_count += printf("%s", va_arg(args, char *));
+                    	break;
+                	case '%':
+                    	putchar('%');
+                    	char_count++;
+                    	break;
+                	default:
+                    	putchar('%'); /* Print the '%' character */
+                    	putchar(*format); /* Print the unknown specifier */
+                    	char_count += 2; /* Count both '%' and the unknown specifier */
+                    	break;
+            	}
+        	} else {
+            	putchar(*format);
+            	char_count++;
+        	}
+        	format++;
+    	}
 
-    while (*format) {
-        if (*format == '%') {
-            format++;
-            if (*format == '\0') {
-                break; // Error: unexpected end of format string
-            }
-            switch (*format) {
-                case 'c':
-                    putchar(va_arg(args, int));
-                    char_count++;
-                    break;
-                case 's': {
-                    const char *str = va_arg(args, const char *);
-                    if (str == NULL) {
-                        fputs("(null)", stdout); // Handle NULL string
-                        char_count += 6; // Count "(null)"
-                    } else {
-                        char_count += printf("%s", str);
-                    }
-                    break;
-                }
-                case '%':
-                    putchar('%');
-                    char_count++;
-                    break;
-                default:
-                    putchar('%');
-                    putchar(*format);
-                    char_count += 2;
-                    break;
-            }
-        } else {
-            putchar(*format);
-            char_count++;
-        }
-        format++;
-    }
+    	va_end(args);
 
-    va_end(args);
-
-    return char_count;
+    	return char_count;
 }
