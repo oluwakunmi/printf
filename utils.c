@@ -78,4 +78,3 @@ int isPrintable(char character)
 		return (1);
 	return (0);
 }
-
